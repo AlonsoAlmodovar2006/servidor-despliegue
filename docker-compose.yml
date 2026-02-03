@@ -1,0 +1,116 @@
+version: "3.8"
+
+networks:
+  proxy:
+    external: true
+  monitor:
+    driver: bridge
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy:latest
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DEFAULT_HOST=portainer.${SERVER_IP}.nip.io
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+    networks:
+      - proxy
+      - monitor
+
+  nginx-proxy-letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: nginx-proxy-letsencrypt
+    restart: unless-stopped
+    depends_on:
+      - nginx-proxy
+    environment:
+      - NGINX_PROXY_CONTAINER=nginx-proxy
+      - DEFAULT_EMAIL=tuemail@ejemplo.com
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+    networks:
+      - proxy
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    environment:
+      - VIRTUAL_HOST=portainer.${SERVER_IP}.nip.io
+      - VIRTUAL_PORT=9000
+      - LETSENCRYPT_HOST=portainer.${SERVER_IP}.nip.io
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - proxy
+      - monitor
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    environment:
+      - VIRTUAL_HOST=prometheus.${SERVER_IP}.nip.io
+      - VIRTUAL_PORT=9090
+    volumes:
+      - ./prometheus:/etc/prometheus
+    networks:
+      - monitor
+      - proxy
+      
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      - VIRTUAL_HOST=grafana.${SERVER_IP}.nip.io
+      - VIRTUAL_PORT=3000
+      - LETSENCRYPT_HOST=grafana.${SERVER_IP}.nip.io
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - monitor
+      - proxy
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command: 
+      - '--path.procfs=/host/proc' 
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points'
+      - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+    networks:
+      - monitor
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare-tunnel
+    restart: unless-stopped
+    environment:
+      - TUNNEL_TOKEN=YOUR_TOKEN
+    command: tunnel run
+    networks:
+      - proxy
+
+volumes:
+  portainer_data:
+  grafana_data:
+

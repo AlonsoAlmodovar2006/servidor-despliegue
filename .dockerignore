@@ -1,0 +1,22 @@
+# --- Git ---
+.git
+.gitignore
+
+# --- Secretos ---
+.env
+
+# --- Datos Locales ---
+portainer_data/
+grafana_data/
+prometheus/
+nginx/
+
+# --- Documentación ---
+README.md
+LICENSE
+docs/
+
+# --- Otros ---
+Dockerfile
+docker-compose.yml
+.dockerignore

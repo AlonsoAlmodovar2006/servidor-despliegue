@@ -1,0 +1,27 @@
+# --- Seguridad ---
+.env
+
+# --- Persistencia de Datos (No versionar bases de datos locales) ---
+portainer_data/
+grafana_data/
+prometheus/data/
+
+# --- Archivos del Proxy y Certificados ---
+nginx/vhost/*
+nginx/html/*
+certs/
+acme/
+
+# Ignorar todo en estas carpetas pero mantener la carpeta (opcional)
+!nginx/vhost/.gitkeep
+!nginx/html/.gitkeep
+
+# --- Logs y Temporales ---
+*.log
+.cache/
+
+# --- Sistema y Editores ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
