@@ -11,7 +11,7 @@ RANGO=10
 USUARIO=$1
 
 # 1. Comprobaciones básicas
-fi [ -z "$USUARIO" ]; then
+if [ -z "$USUARIO" ]; then
     echo "❌ Error: Debes indicar un nombre de usuario."
     echo "Uso: sudo ./crear_usuario.sh nombre_usuario"
     exit 1
