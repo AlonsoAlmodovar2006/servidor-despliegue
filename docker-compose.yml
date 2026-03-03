@@ -13,7 +13,7 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      - DEFAULT_HOST=portainer-alonso.servidorgp.somosdelprieto.com
+      - DEFAULT_HOST=portainer.alonso.servidorgp.somosdelprieto.com
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./certs:/etc/nginx/certs

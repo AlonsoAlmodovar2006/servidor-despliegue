@@ -36,11 +36,11 @@ Este proyecto implementa una infraestructura completa basada en Docker para aloj
 ### Arquitectura
 
 El sistema utiliza:
-- **nip.io** para resolución DNS dinámica basada en IP en red local (ej: `app.192.168.1.100.nip.io`)
-- **Cloudflare Tunnel** para exponer servicios a internet sin necesidad de IP pública ni abrir puertos en el router
-- **Dominio propio** (ej: `tudominio.dpdns.org`) gestionado a través de Cloudflare
+- **Dominio propio** (`alonso.servidorgp.somosdelprieto.com`) con subdominios para cada servicio
+- **nginx-proxy** como proxy inverso que enruta el tráfico según el subdominio
+- **Let's Encrypt** para certificados SSL automáticos
 
-> 💡 **Cloudflare Tunnel** permite saltar restricciones como CGNAT, haciendo accesibles los servicios desde cualquier lugar.
+Los servicios se acceden mediante subdominios con el formato `servicio.alonso.servidorgp.somosdelprieto.com`. Es necesario tener un registro DNS wildcard (`*.alonso.servidorgp.somosdelprieto.com`) apuntando a la IP del servidor.
 
 ---
 
@@ -102,21 +102,18 @@ scp -r ./mi-proyecto usuario@IP_SERVIDOR:~/apps/
 
 **2. Crear el `docker-compose.yml`**
 
-Puedes usar **nip.io** (solo red local) o tu **subdominio de Cloudflare** (acceso desde internet):
+Usa un subdominio de `alonso.servidorgp.somosdelprieto.com`:
 
 ```yaml
-version: "3.8"
 services:
   mi-app:
     image: nginx:latest  # o tu imagen personalizada
     container_name: mi-app
     restart: unless-stopped
     environment:
-      # Opción 1: Solo red local (nip.io)
-      # - VIRTUAL_HOST=mi-app.192.168.1.100.nip.io
-      # Opción 2: Acceso desde internet (Cloudflare) - RECOMENDADO
-      - VIRTUAL_HOST=mi-app.tudominio.dpdns.org
+      - VIRTUAL_HOST=mi-app.alonso.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=80
+      - LETSENCRYPT_HOST=mi-app.alonso.servidorgp.somosdelprieto.com
     networks:
       - proxy
 
@@ -125,7 +122,7 @@ networks:
     external: true
 ```
 
-> ⚠️ **Importante**: Para que funcione con Cloudflare, el subdominio debe estar configurado en el túnel del administrador o usar un wildcard DNS (`*.tudominio.dpdns.org`).
+> ⚠️ **Importante**: Es necesario que exista un registro DNS wildcard (`*.alonso.servidorgp.somosdelprieto.com`) apuntando a la IP del servidor para que los subdominios resuelvan correctamente.
 
 **3. Conectar por SSH y lanzar**
 ```bash
@@ -135,7 +132,7 @@ docker compose up -d
 ```
 
 **4. Acceder a la aplicación**
-- URL: `http://mi-app.TU_IP.nip.io`
+- URL: `https://mi-app.alonso.servidorgp.somosdelprieto.com`
 
 ### Variables de entorno importantes
 
@@ -150,53 +147,30 @@ docker compose up -d
 
 ## 🔒 Dominios y Certificados SSL
 
-### Opción 1: nip.io (solo red local)
+### Configuración DNS
 
-nip.io resuelve automáticamente cualquier subdominio con una IP:
-- `app.192.168.1.100.nip.io` → resuelve a `192.168.1.100`
+Todos los servicios utilizan subdominios de `alonso.servidorgp.somosdelprieto.com`. Es necesario configurar un registro DNS wildcard:
 
-> ⚠️ Solo funciona dentro de la red local. No accesible desde internet.
+| Tipo | Nombre | Valor |
+|------|--------|-------|
+| A | `*.alonso.servidorgp` | IP del servidor |
 
-### Opción 2: Cloudflare Tunnel + Dominio propio (RECOMENDADO)
+Esto permite que cualquier subdominio (como `grafana.alonso.servidorgp.somosdelprieto.com`) resuelva automáticamente a la IP del servidor.
 
-Esta es la opción recomendada ya que:
-- ✅ Funciona sin IP pública
-- ✅ Salta CGNAT y restricciones de red
-- ✅ SSL gestionado automáticamente por Cloudflare
-- ✅ Accesible desde cualquier lugar
+### Certificados SSL con Let's Encrypt
 
-**Configuración del administrador:**
+El contenedor `nginx-proxy-letsencrypt` genera y renueva automáticamente los certificados SSL para cada servicio que tenga configurada la variable `LETSENCRYPT_HOST`.
 
-1. Crear un túnel en [Cloudflare Zero Trust](https://one.dash.cloudflare.com/)
-2. Obtener el `TUNNEL_TOKEN` y añadirlo al `docker-compose.yml` principal
-3. Configurar un **wildcard DNS** (`*.tudominio.dpdns.org`) apuntando al túnel
-4. En la configuración del túnel, añadir una regla que redirija `*.tudominio.dpdns.org` → `http://nginx-proxy:80`
-
-**Configuración del usuario:**
-
-Simplemente usa tu subdominio en el `docker-compose.yml`:
+**Requisitos:**
+- El puerto 80 debe ser accesible desde internet (para la validación HTTP-01)
+- `LETSENCRYPT_HOST` debe coincidir con `VIRTUAL_HOST`
 
 ```yaml
 environment:
-  - VIRTUAL_HOST=mi-app.tudominio.dpdns.org
+  - VIRTUAL_HOST=mi-app.alonso.servidorgp.somosdelprieto.com
   - VIRTUAL_PORT=80
+  - LETSENCRYPT_HOST=mi-app.alonso.servidorgp.somosdelprieto.com
 ```
-
-> 📝 **Nota**: Con Cloudflare Tunnel, el SSL lo gestiona Cloudflare automáticamente. No necesitas configurar Let's Encrypt.
-
-### Opción 3: Let's Encrypt (requiere IP pública)
-
-Si tienes IP pública y puertos 80/443 abiertos:
-
-```yaml
-environment:
-  - VIRTUAL_HOST=mi-app.midominio.com
-  - VIRTUAL_PORT=80
-  - LETSENCRYPT_HOST=mi-app.midominio.com
-  - LETSENCRYPT_EMAIL=tu-email@dominio.com
-```
-
-El contenedor `nginx-proxy-letsencrypt` generará automáticamente el certificado.
 
 ---
 
@@ -206,9 +180,9 @@ El contenedor `nginx-proxy-letsencrypt` generará automáticamente el certificad
 
 | Servicio | URL | Descripción |
 |----------|-----|-------------|
-| **Grafana** | `grafana.TU_IP.nip.io` | Dashboards y visualización de métricas |
-| **Prometheus** | `prometheus.TU_IP.nip.io` | Base de datos de métricas y consultas |
-| **Portainer** | `portainer.TU_IP.nip.io` | Gestión visual de contenedores Docker |
+| **Grafana** | `grafana.alonso.servidorgp.somosdelprieto.com` | Dashboards y visualización de métricas |
+| **Prometheus** | `prometheus.alonso.servidorgp.somosdelprieto.com` | Base de datos de métricas y consultas |
+| **Portainer** | `portainer.alonso.servidorgp.somosdelprieto.com` | Gestión visual de contenedores Docker |
 
 ### Métricas recopiladas
 
@@ -221,7 +195,7 @@ El contenedor `nginx-proxy-letsencrypt` generará automáticamente el certificad
 
 ### Configurar Grafana
 
-1. Accede a `http://grafana.TU_IP.nip.io`
+1. Accede a `https://grafana.alonso.servidorgp.somosdelprieto.com`
 2. Credenciales por defecto: `admin` / `admin`
 3. Añade Prometheus como Data Source:
    - URL: `http://prometheus:9090`
@@ -245,14 +219,12 @@ curl "http://localhost:9090/api/v1/query?query=up"
 
 ### Arrancar servicios
 
-> ⚠️ **Importante**: El archivo `docker-compose.yml` usa la variable `${SERVER_IP}` para generar los dominios nip.io. Debes definirla cada vez que arranques los servicios.
-
 ```bash
-# Arrancar toda la infraestructura (con IP automática)
-SERVER_IP=$(hostname -I | awk '{print $1}') docker compose up -d
+# Arrancar toda la infraestructura
+docker compose up -d
 
 # Arrancar un servicio específico
-SERVER_IP=$(hostname -I | awk '{print $1}') docker compose up -d grafana
+docker compose up -d grafana
 ```
 
 ### Parar servicios
@@ -383,4 +355,4 @@ Proyecto/
    docker logs node-exporter
    ```
 2. Comprueba la configuración en `prometheus/prometheus.yml`
-3. Accede a Prometheus y verifica los targets: `http://prometheus.TU_IP.nip.io/targets`
+3. Accede a Prometheus y verifica los targets: `https://prometheus.alonso.servidorgp.somosdelprieto.com/targets`
