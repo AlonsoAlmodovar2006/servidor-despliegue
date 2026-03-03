@@ -1,5 +1,3 @@
-version: "3.8"
-
 networks:
   proxy:
     external: true
@@ -15,7 +13,7 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      - DEFAULT_HOST=portainer.${SERVER_IP}.nip.io
+      - DEFAULT_HOST=portainer-alonso.servidorgp.somosdelprieto.com
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./certs:/etc/nginx/certs
@@ -47,9 +45,9 @@ services:
     container_name: portainer
     restart: unless-stopped
     environment:
-      - VIRTUAL_HOST=portainer.${SERVER_IP}.nip.io
+      - VIRTUAL_HOST=portainer-alonso.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=9000
-      - LETSENCRYPT_HOST=portainer.${SERVER_IP}.nip.io
+      - LETSENCRYPT_HOST=portainer-alonso.servidorgp.somosdelprieto.com
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
@@ -62,8 +60,9 @@ services:
     container_name: prometheus
     restart: unless-stopped
     environment:
-      - VIRTUAL_HOST=prometheus.${SERVER_IP}.nip.io
+      - VIRTUAL_HOST=prometheus-alonso.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=9090
+      - LETSENCRYPT_HOST=prometheus-alonso.servidorgp.somosdelprieto.com
     volumes:
       - ./prometheus:/etc/prometheus
     networks:
@@ -75,9 +74,9 @@ services:
     container_name: grafana
     restart: unless-stopped
     environment:
-      - VIRTUAL_HOST=grafana.${SERVER_IP}.nip.io
+      - VIRTUAL_HOST=grafana-alonso.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=3000
-      - LETSENCRYPT_HOST=grafana.${SERVER_IP}.nip.io
+      - LETSENCRYPT_HOST=grafana-alonso.servidorgp.somosdelprieto.com
     volumes:
       - grafana_data:/var/lib/grafana
     networks:
@@ -99,16 +98,6 @@ services:
       - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
     networks:
       - monitor
-
-  tunnel:
-    image: cloudflare/cloudflared:latest
-    container_name: cloudflare-tunnel
-    restart: unless-stopped
-    environment:
-      - TUNNEL_TOKEN=YOUR_TOKEN
-    command: tunnel run
-    networks:
-      - proxy
 
 volumes:
   portainer_data:
