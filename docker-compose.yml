@@ -45,9 +45,9 @@ services:
     container_name: portainer
     restart: unless-stopped
     environment:
-      - VIRTUAL_HOST=portainer-alonso.servidorgp.somosdelprieto.com
+      - VIRTUAL_HOST=portainer.alonso.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=9000
-      - LETSENCRYPT_HOST=portainer-alonso.servidorgp.somosdelprieto.com
+      - LETSENCRYPT_HOST=portainer.alonso.servidorgp.somosdelprieto.com
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
@@ -60,9 +60,9 @@ services:
     container_name: prometheus
     restart: unless-stopped
     environment:
-      - VIRTUAL_HOST=prometheus-alonso.servidorgp.somosdelprieto.com
+      - VIRTUAL_HOST=prometheus.alonso.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=9090
-      - LETSENCRYPT_HOST=prometheus-alonso.servidorgp.somosdelprieto.com
+      - LETSENCRYPT_HOST=prometheus.alonso.servidorgp.somosdelprieto.com
     volumes:
       - ./prometheus:/etc/prometheus
     networks:
@@ -74,9 +74,9 @@ services:
     container_name: grafana
     restart: unless-stopped
     environment:
-      - VIRTUAL_HOST=grafana-alonso.servidorgp.somosdelprieto.com
+      - VIRTUAL_HOST=grafana.alonso.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=3000
-      - LETSENCRYPT_HOST=grafana-alonso.servidorgp.somosdelprieto.com
+      - LETSENCRYPT_HOST=grafana.alonso.servidorgp.somosdelprieto.com
     volumes:
       - grafana_data:/var/lib/grafana
     networks:
