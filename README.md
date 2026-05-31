@@ -35,10 +35,10 @@ Este proyecto implementa una infraestructura completa basada en Docker para aloj
 ### Arquitectura
 
 El sistema utiliza:
-- **Dominio propio** (`alonso.servidorgp.somosdelprieto.com`) con subdominios para cada servicio
+- **Dominio propio** (`servidorgp.somosdelprieto.com`) con subdominios para cada servicio
 - **nginx-proxy** como proxy inverso que enruta el tráfico según el subdominio
 
-Los servicios se acceden mediante subdominios con el formato `servicio.alonso.servidorgp.somosdelprieto.com`. Las aplicaciones de alumnos se publican con el formato `alumno-app.servidorgp.somosdelprieto.com` (sustituir el punto por un guion). Es necesario tener un registro DNS wildcard (`*.servidorgp.somosdelprieto.com`) apuntando a la IP del servidor.
+Los servicios se acceden mediante subdominios con el formato `servicio-alumno.servidorgp.somosdelprieto.com` (el punto se sustituye por un guion). Las aplicaciones de alumnos se publican con el formato `alumno-app.servidorgp.somosdelprieto.com`. Es necesario tener un registro DNS wildcard (`*.servidorgp.somosdelprieto.com`) apuntando a la IP del servidor.
 
 ---
 
@@ -160,9 +160,9 @@ Esto permite que cualquier subdominio (como `grafana.alonso.servidorgp.somosdelp
 
 | Servicio | URL | Descripción |
 |----------|-----|-------------|
-| **Grafana** | `http://grafana.alonso.servidorgp.somosdelprieto.com` | Dashboards y visualización de métricas |
-| **Prometheus** | `http://prometheus.alonso.servidorgp.somosdelprieto.com` | Base de datos de métricas y consultas |
-| **Portainer** | `http://portainer.alonso.servidorgp.somosdelprieto.com` | Gestión visual de contenedores Docker |
+| **Grafana** | `http://grafana-alonso.servidorgp.somosdelprieto.com` | Dashboards y visualización de métricas |
+| **Prometheus** | `http://prometheus-alonso.servidorgp.somosdelprieto.com` | Base de datos de métricas y consultas |
+| **Portainer** | `http://portainer-alonso.servidorgp.somosdelprieto.com` | Gestión visual de contenedores Docker |
 
 ### Métricas recopiladas
 
@@ -175,7 +175,7 @@ Esto permite que cualquier subdominio (como `grafana.alonso.servidorgp.somosdelp
 
 ### Configurar Grafana
 
-1. Accede a `http://grafana.alonso.servidorgp.somosdelprieto.com`
+1. Accede a `http://grafana-alonso.servidorgp.somosdelprieto.com`
 2. Credenciales por defecto: `admin` / `admin`
 3. Añade Prometheus como Data Source:
    - URL: `http://prometheus:9090`
@@ -324,4 +324,4 @@ Proyecto/
    docker logs node-exporter
    ```
 2. Comprueba la configuración en `prometheus/prometheus.yml`
-3. Accede a Prometheus y verifica los targets: `http://prometheus.alonso.servidorgp.somosdelprieto.com/targets`
+3. Accede a Prometheus y verifica los targets: `http://prometheus-alonso.servidorgp.somosdelprieto.com/targets`

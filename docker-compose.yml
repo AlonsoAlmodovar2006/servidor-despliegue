@@ -12,7 +12,7 @@ services:
     ports:
       - "80:80"
     environment:
-      - DEFAULT_HOST=portainer.alonso.servidorgp.somosdelprieto.com
+      - DEFAULT_HOST=portainer-alonso.servidorgp.somosdelprieto.com
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
     networks:
@@ -24,7 +24,7 @@ services:
     container_name: portainer
     restart: unless-stopped
     environment:
-      - VIRTUAL_HOST=portainer.alonso.servidorgp.somosdelprieto.com
+      - VIRTUAL_HOST=portainer-alonso.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=9000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -38,7 +38,7 @@ services:
     container_name: prometheus
     restart: unless-stopped
     environment:
-      - VIRTUAL_HOST=prometheus.alonso.servidorgp.somosdelprieto.com
+      - VIRTUAL_HOST=prometheus-alonso.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=9090
     volumes:
       - ./prometheus:/etc/prometheus
@@ -51,7 +51,7 @@ services:
     container_name: grafana
     restart: unless-stopped
     environment:
-      - VIRTUAL_HOST=grafana.alonso.servidorgp.somosdelprieto.com
+      - VIRTUAL_HOST=grafana-alonso.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=3000
     volumes:
       - grafana_data:/var/lib/grafana
