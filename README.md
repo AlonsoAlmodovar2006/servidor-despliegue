@@ -1,13 +1,13 @@
 # Plataforma de Despliegue con Docker y Proxy Inverso
 
-Este proyecto implementa una infraestructura completa basada en Docker para alojar aplicaciones web de múltiples usuarios. Incluye proxy inverso con Nginx, certificados SSL automáticos con Let's Encrypt, monitorización con Prometheus/Grafana y gestión de contenedores con Portainer.
+Este proyecto implementa una infraestructura completa basada en Docker para alojar aplicaciones web de múltiples usuarios. Incluye proxy inverso con Nginx, monitorización con Prometheus/Grafana y gestión de contenedores con Portainer.
 
 ## 📋 Tabla de Contenidos
 
 - [Requisitos de Red](#-requisitos-de-red)
 - [Gestión de Usuarios](#-gestión-de-usuarios)
 - [Despliegue de Aplicaciones](#-despliegue-de-aplicaciones)
-- [Dominios y Certificados SSL](#-dominios-y-certificados-ssl)
+- [Dominios](#-dominios)
 - [Monitorización y Métricas](#-monitorización-y-métricas)
 - [Mantenimiento Básico](#️-mantenimiento-básico)
 
@@ -19,8 +19,7 @@ Este proyecto implementa una infraestructura completa basada en Docker para aloj
 
 | Puerto | Servicio | Descripción |
 |--------|----------|-------------|
-| `80` | HTTP | Tráfico web sin cifrar (redirige a HTTPS) |
-| `443` | HTTPS | Tráfico web cifrado con SSL |
+| `80` | HTTP | Tráfico web sin cifrar |
 | `22` | SSH | Administración remota y subida de archivos (SCP) |
 
 ### Redes Docker
@@ -38,9 +37,8 @@ Este proyecto implementa una infraestructura completa basada en Docker para aloj
 El sistema utiliza:
 - **Dominio propio** (`alonso.servidorgp.somosdelprieto.com`) con subdominios para cada servicio
 - **nginx-proxy** como proxy inverso que enruta el tráfico según el subdominio
-- **Let's Encrypt** para certificados SSL automáticos
 
-Los servicios se acceden mediante subdominios con el formato `servicio.alonso.servidorgp.somosdelprieto.com`. Es necesario tener un registro DNS wildcard (`*.alonso.servidorgp.somosdelprieto.com`) apuntando a la IP del servidor.
+Los servicios se acceden mediante subdominios con el formato `servicio.alonso.servidorgp.somosdelprieto.com`. Las aplicaciones de alumnos se publican con el formato `alumno-app.servidorgp.somosdelprieto.com` (sustituir el punto por un guion). Es necesario tener un registro DNS wildcard (`*.servidorgp.somosdelprieto.com`) apuntando a la IP del servidor.
 
 ---
 
@@ -102,7 +100,7 @@ scp -r ./mi-proyecto usuario@IP_SERVIDOR:~/apps/
 
 **2. Crear el `docker-compose.yml`**
 
-Usa un subdominio de `alonso.servidorgp.somosdelprieto.com`:
+Usa el formato `alumno-app.servidorgp.somosdelprieto.com`:
 
 ```yaml
 services:
@@ -111,9 +109,8 @@ services:
     container_name: mi-app
     restart: unless-stopped
     environment:
-      - VIRTUAL_HOST=mi-app.alonso.servidorgp.somosdelprieto.com
+         - VIRTUAL_HOST=alumno-app.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=80
-      - LETSENCRYPT_HOST=mi-app.alonso.servidorgp.somosdelprieto.com
     networks:
       - proxy
 
@@ -122,7 +119,7 @@ networks:
     external: true
 ```
 
-> ⚠️ **Importante**: Es necesario que exista un registro DNS wildcard (`*.alonso.servidorgp.somosdelprieto.com`) apuntando a la IP del servidor para que los subdominios resuelvan correctamente.
+> ⚠️ **Importante**: Es necesario que exista un registro DNS wildcard (`*.servidorgp.somosdelprieto.com`) apuntando a la IP del servidor para que los subdominios resuelvan correctamente.
 
 **3. Conectar por SSH y lanzar**
 ```bash
@@ -132,7 +129,7 @@ docker compose up -d
 ```
 
 **4. Acceder a la aplicación**
-- URL: `https://mi-app.alonso.servidorgp.somosdelprieto.com`
+- URL: `http://alumno-app.servidorgp.somosdelprieto.com`
 
 ### Variables de entorno importantes
 
@@ -140,37 +137,20 @@ docker compose up -d
 |----------|-------------|
 | `VIRTUAL_HOST` | Dominio para acceder a la app |
 | `VIRTUAL_PORT` | Puerto interno del contenedor (por defecto 80) |
-| `LETSENCRYPT_HOST` | Dominio para el certificado SSL (debe coincidir con VIRTUAL_HOST) |
-| `LETSENCRYPT_EMAIL` | Email para notificaciones de Let's Encrypt |
 
 ---
 
-## 🔒 Dominios y Certificados SSL
+## 🌐 Dominios
 
 ### Configuración DNS
 
-Todos los servicios utilizan subdominios de `alonso.servidorgp.somosdelprieto.com`. Es necesario configurar un registro DNS wildcard:
+Todos los servicios utilizan subdominios de `servidorgp.somosdelprieto.com`. Es necesario configurar un registro DNS wildcard:
 
 | Tipo | Nombre | Valor |
 |------|--------|-------|
-| A | `*.alonso.servidorgp` | IP del servidor |
+| A | `*.servidorgp` | IP del servidor |
 
-Esto permite que cualquier subdominio (como `grafana.alonso.servidorgp.somosdelprieto.com`) resuelva automáticamente a la IP del servidor.
-
-### Certificados SSL con Let's Encrypt
-
-El contenedor `nginx-proxy-letsencrypt` genera y renueva automáticamente los certificados SSL para cada servicio que tenga configurada la variable `LETSENCRYPT_HOST`.
-
-**Requisitos:**
-- El puerto 80 debe ser accesible desde internet (para la validación HTTP-01)
-- `LETSENCRYPT_HOST` debe coincidir con `VIRTUAL_HOST`
-
-```yaml
-environment:
-  - VIRTUAL_HOST=mi-app.alonso.servidorgp.somosdelprieto.com
-  - VIRTUAL_PORT=80
-  - LETSENCRYPT_HOST=mi-app.alonso.servidorgp.somosdelprieto.com
-```
+Esto permite que cualquier subdominio (como `grafana.alonso.servidorgp.somosdelprieto.com` o `alumno-app.servidorgp.somosdelprieto.com`) resuelva automáticamente a la IP del servidor.
 
 ---
 
@@ -180,9 +160,9 @@ environment:
 
 | Servicio | URL | Descripción |
 |----------|-----|-------------|
-| **Grafana** | `grafana.alonso.servidorgp.somosdelprieto.com` | Dashboards y visualización de métricas |
-| **Prometheus** | `prometheus.alonso.servidorgp.somosdelprieto.com` | Base de datos de métricas y consultas |
-| **Portainer** | `portainer.alonso.servidorgp.somosdelprieto.com` | Gestión visual de contenedores Docker |
+| **Grafana** | `http://grafana.alonso.servidorgp.somosdelprieto.com` | Dashboards y visualización de métricas |
+| **Prometheus** | `http://prometheus.alonso.servidorgp.somosdelprieto.com` | Base de datos de métricas y consultas |
+| **Portainer** | `http://portainer.alonso.servidorgp.somosdelprieto.com` | Gestión visual de contenedores Docker |
 
 ### Métricas recopiladas
 
@@ -195,7 +175,7 @@ environment:
 
 ### Configurar Grafana
 
-1. Accede a `https://grafana.alonso.servidorgp.somosdelprieto.com`
+1. Accede a `http://grafana.alonso.servidorgp.somosdelprieto.com`
 2. Credenciales por defecto: `admin` / `admin`
 3. Añade Prometheus como Data Source:
    - URL: `http://prometheus:9090`
@@ -315,9 +295,7 @@ Proyecto/
 │   └── prometheus.yml      # Configuración de Prometheus
 ├── app_prueba/
 │   └── docker-compose.yml  # Ejemplo de aplicación
-├── certs/                  # Certificados SSL (generados automáticamente)
-├── vhost/                  # Configuraciones virtuales de Nginx
-└── html/                   # Archivos estáticos para validación SSL
+└── html/                   # Archivos estáticos opcionales para Nginx
 ```
 
 ---
@@ -339,15 +317,6 @@ Proyecto/
    docker network inspect proxy
    ```
 
-### El certificado SSL no se genera
-
-1. Comprueba que el puerto 80 es accesible desde internet
-2. Revisa los logs:
-   ```bash
-   docker logs nginx-proxy-letsencrypt
-   ```
-3. Verifica que `LETSENCRYPT_HOST` coincide con `VIRTUAL_HOST`
-
 ### Prometheus no recoge métricas
 
 1. Verifica que Node Exporter está corriendo:
@@ -355,4 +324,4 @@ Proyecto/
    docker logs node-exporter
    ```
 2. Comprueba la configuración en `prometheus/prometheus.yml`
-3. Accede a Prometheus y verifica los targets: `https://prometheus.alonso.servidorgp.somosdelprieto.com/targets`
+3. Accede a Prometheus y verifica los targets: `http://prometheus.alonso.servidorgp.somosdelprieto.com/targets`

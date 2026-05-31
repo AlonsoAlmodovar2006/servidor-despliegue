@@ -11,34 +11,13 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "443:443"
     environment:
       - DEFAULT_HOST=portainer.alonso.servidorgp.somosdelprieto.com
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./certs:/etc/nginx/certs
-      - ./vhost:/etc/nginx/vhost.d
-      - ./html:/usr/share/nginx/html
     networks:
       - proxy
       - monitor
-
-  nginx-proxy-letsencrypt:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    container_name: nginx-proxy-letsencrypt
-    restart: unless-stopped
-    depends_on:
-      - nginx-proxy
-    environment:
-      - NGINX_PROXY_CONTAINER=nginx-proxy
-      - DEFAULT_EMAIL=tuemail@ejemplo.com
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./certs:/etc/nginx/certs
-      - ./vhost:/etc/nginx/vhost.d
-      - ./html:/usr/share/nginx/html
-    networks:
-      - proxy
 
   portainer:
     image: portainer/portainer-ce:latest
@@ -47,7 +26,6 @@ services:
     environment:
       - VIRTUAL_HOST=portainer.alonso.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=9000
-      - LETSENCRYPT_HOST=portainer.alonso.servidorgp.somosdelprieto.com
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
@@ -62,7 +40,6 @@ services:
     environment:
       - VIRTUAL_HOST=prometheus.alonso.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=9090
-      - LETSENCRYPT_HOST=prometheus.alonso.servidorgp.somosdelprieto.com
     volumes:
       - ./prometheus:/etc/prometheus
     networks:
@@ -76,7 +53,6 @@ services:
     environment:
       - VIRTUAL_HOST=grafana.alonso.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=3000
-      - LETSENCRYPT_HOST=grafana.alonso.servidorgp.somosdelprieto.com
     volumes:
       - grafana_data:/var/lib/grafana
     networks:

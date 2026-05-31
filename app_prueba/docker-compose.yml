@@ -5,10 +5,8 @@ services:
     container_name: app-hola-mundo
     restart: unless-stopped
     environment:
-      # Usa tu subdominio de Cloudflare para acceso desde internet
-      - VIRTUAL_HOST=hola.tudominio.dpdns.org
-      # O usa nip.io para acceso solo en red local:
-      # - VIRTUAL_HOST=hola.${SERVER_IP}.nip.io
+      # Formato requerido: alumno-app.servidorgp.somosdelprieto.com
+      - VIRTUAL_HOST=alumno-app.servidorgp.somosdelprieto.com
       - VIRTUAL_PORT=80
     networks:
       - proxy
