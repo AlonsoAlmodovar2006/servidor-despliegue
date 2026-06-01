@@ -14,6 +14,7 @@ services:
     environment:
       - DEFAULT_HOST=portainer-alonso.servidorgp.somosdelprieto.com
     volumes:
+      - ./nginx-proxy/vhost.d:/etc/nginx/vhost.d:ro
       - /var/run/docker.sock:/tmp/docker.sock:ro
     networks:
       - proxy

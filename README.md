@@ -38,7 +38,7 @@ El sistema utiliza:
 - **Dominio propio** (`servidorgp.somosdelprieto.com`) con subdominios para cada servicio
 - **nginx-proxy** como proxy inverso que enruta el tráfico según el subdominio
 
-Los servicios se acceden mediante subdominios con el formato `servicio-alumno.servidorgp.somosdelprieto.com` (el punto se sustituye por un guion). Las aplicaciones de alumnos se publican con el formato `alumno-app.servidorgp.somosdelprieto.com`. Es necesario tener un registro DNS wildcard (`*.servidorgp.somosdelprieto.com`) apuntando a la IP del servidor.
+Los servicios se acceden mediante subdominios con el formato `servicio-alumno.servidorgp.somosdelprieto.com`. Las aplicaciones de alumnos se publican con el formato `alumno-app.servidorgp.somosdelprieto.com`. Es necesario tener un registro DNS wildcard (`*.servidorgp.somosdelprieto.com`) apuntando a la IP del servidor.
 
 ---
 
@@ -150,7 +150,7 @@ Todos los servicios utilizan subdominios de `servidorgp.somosdelprieto.com`. Es 
 |------|--------|-------|
 | A | `*.servidorgp` | IP del servidor |
 
-Esto permite que cualquier subdominio (como `grafana.alonso.servidorgp.somosdelprieto.com` o `alumno-app.servidorgp.somosdelprieto.com`) resuelva automáticamente a la IP del servidor.
+Esto permite que cualquier subdominio (como `grafana-alonso.servidorgp.somosdelprieto.com` o `alumno-app.servidorgp.somosdelprieto.com`) resuelva automáticamente a la IP del servidor.
 
 ---
 
